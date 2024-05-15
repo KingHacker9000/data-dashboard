@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, session, send_file
 from flask_session import Session
-from tempfile import mkdtemp, mkstemp, NamedTemporaryFile
+from tempfile import mkdtemp
 from helpers import login_required
 import csv
 import os
@@ -56,4 +56,4 @@ def exportfile(form_id):
 
 # Run The Application
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", debug=True)
+    app.run(host="0.0.0.0")
