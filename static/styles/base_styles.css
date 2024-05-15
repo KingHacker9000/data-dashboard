@@ -1,0 +1,96 @@
+/* 
+#21BCF3
+#19D25D
+#FFBF00
+#E83F6F
+#731DD8
+*/
+
+:root {
+    --bBlue: #21BCF3;
+    --bGreen: #19D25D;
+    --pOrange: #FFBF00;
+    --pCrimson: #E83F6F;
+    --pViolet: #731DD8;
+    --bBlue100: #daecf2;
+    --bBlue500: #70b1c9;
+    --bBlue700: #3ea8cf;
+    --bBlue900: #00384d;
+    --bGreen100: #aaf2c4;
+}
+
+body{
+    font-family: "Montserrat", sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 400;
+    font-style: normal;
+}
+
+a{
+    text-decoration: none;
+    color: inherit;
+}
+
+a:hover{
+    color: inherit;
+}
+
+header{
+    font-family: "Montserrat", sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 400;
+    font-style: normal;
+}
+
+.logo{
+    color: var(--bBlue);
+}
+
+.navbar{
+    display: flex;
+    padding: 0.3em 5em;
+    backdrop-filter: blur(3px);
+    border-bottom: 0pt solid var(--bBlue100);
+    box-shadow: 0 0px 0px var(--bBlue100);
+    -webkit-transition: all 0.1s linear;
+    -moz-transition: all 0.1s linear;
+    -o-transition: all 0.1s linear;
+    transition: all 0.1s linear;
+}
+
+.navtabsleft{
+    display: flex;
+    flex-direction: row;
+}
+
+.navtabsright{
+    display: flex;
+    flex-direction: row;
+}
+
+.navtab{
+    display: flex;
+    flex-direction: row;
+    padding: 1em 2em;
+    font-size: 1.1em;
+}
+
+.largeText{
+    font-size: 72pt;
+    text-align: center;
+    font-weight: 200;
+    padding: 1.5em 0 2em 0;
+    color: #333;
+}
+
+.dev{
+    border: 1pt solid orange;
+}
+
+.sticky {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    border-bottom: 1pt solid var(--bBlue100);
+    box-shadow: 0 5px 5px var(--bBlue100);
+}
