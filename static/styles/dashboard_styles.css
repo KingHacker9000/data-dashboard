@@ -20,8 +20,17 @@
     width: 100%;
     padding: 1em;
     text-align: center;
-    border: 1pt solid var(--bBlue100);
-    box-shadow: 0 5px 10px var(--bBlue100);
+    border: 0pt solid var(--bBlue100);
+    box-shadow: 0 0px 0px var(--bBlue100);
     border-radius: 15px;
     height: 8in;
+    -webkit-transition: all 0.2s linear;
+    -moz-transition: all 0.2s linear;
+    -o-transition: all 0.2s linear;
+    transition: all 0.2s linear;
+}
+
+.data-container-start{
+    border: 1pt solid var(--bBlue100);
+    box-shadow: 0 10px 20px var(--bBlue100);
 }

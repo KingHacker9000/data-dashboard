@@ -1,0 +1,13 @@
+{% extends 'form_base.html' %}
+
+{% block title %} {{form_name}} {% endblock %}
+
+{% block head %}
+<link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/form_styles.css') }}">
+<link rel="icon" href="{{ url_for('static',filename='img/dash.png') }}" type="image/icon type">
+{% endblock %}
+{% block body %}
+
+Form Has been Submitted
+
+{% endblock%}

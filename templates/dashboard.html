@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends 'home_base.html' %}
 
 {% block title %} Dashboard {% endblock %}
 
@@ -21,5 +21,18 @@
         </div>
     </div>
 </div>
+
+
+<script>
+    elements = document.getElementsByClassName('data-container')
+
+    window.setTimeout(()=> {
+        for (let i = 0; i < elements.length; i++) {
+        const element = elements[i];
+        element.classList.add("data-container-start")
+    }
+    }, 100)
+    
+</script>
 
 {% endblock %}

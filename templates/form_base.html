@@ -17,50 +17,23 @@
 </head>
 <body>
     <header>
-        <div class="navbar" id="navbar">
-            <div class="navtabsleft">
-                <div class="logo navtab"><a href="/">I</a></div>
-                <div class="navtab"><a href="./dashboard">Dashboard</a></div>
-                <div class="navtab"><a href="./export">Export</a></div>
-                <!-- <div class="navtab">Edit</div> -->
+        <div class="top">
+            <div class="navtabsleftforms">
+                <div class="logo navtab" id='island'><a href="/"><img class="" src="{{ url_for('static',filename='img/island.png') }}" alt="I" width='40'></a></div>
+
             </div>
-            <div class="navtabsright">
-                <div class="navicon navtab">
-                    <img src="{{ url_for('static',filename='img/settings.svg') }}" alt="Settings" width="25">
+            <div class="navtabsrightforms">
+                <div class="profile navtabforms">
+                    <img src="{{photo_uri}}" alt="google_photo">
                 </div>
-                <hr width="1.2" size="1"/>
-                <div class="navlogout navtab">
+                <div class="navlogout navtabforms">
                     <a href="/logout">Log out</a>
                 </div>
 
             </div>
             
         </div>
-        <div class="navbar-mobile">
-
-        </div>
     </header>
     {% block body %}{% endblock %}
 </body>
 </html>
-
-<script>
-    // When the user scrolls the page, execute myFunction
-    window.onscroll = function() {myFunction()};
-
-    // Get the navbar
-    var navbar = document.getElementById("navbar");
-
-
-    // Get the offset position of the navbar
-    var sticky = navbar.offsetTop;
-
-    // Add the sticky class to the navbar when you reach its scroll position. Remove "sticky" when you leave the scroll position
-    function myFunction() {
-    if (window.pageYOffset > sticky) {
-        navbar.classList.add("sticky")
-    } else {
-        navbar.classList.remove("sticky");
-    }
-    }
-</script>

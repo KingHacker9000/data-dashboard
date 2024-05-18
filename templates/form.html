@@ -1,0 +1,100 @@
+{% extends 'form_base.html' %}
+
+{% block title %} {{form_name}} {% endblock %}
+
+{% block head %}
+<link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/form_styles.css') }}">
+<link rel="icon" href="{{ url_for('static',filename='img/dash.png') }}" type="image/icon type">
+{% endblock %}
+{% block body %}
+
+<div class="form-container-holder">
+    <div class="form-container">
+        <div class="form-name">{{form_name}}</div>
+        <div class="form-question-container">
+            <form action="/{{form_id}}/form" method="post">
+                {% for question in questions %}
+                    <div class="question-container">
+                        <div class="question">
+                            {{question['text']}}
+                        </div>
+                        {% if question['type']=='date' %}
+                            <input type="date" name="{{question['question_id']}}" id="{{question['question_id']}}" class="form-control form-control-add">
+                        {% endif %}
+                        {% if question['type']=='text' %}
+                            <input type="text" name="{{question['question_id']}}" id="{{question['question_id']}}" class="form-control form-control-add">
+                        {% endif %}
+                        {% if question['type']=='numeric' %}
+                            <input type="number" name="{{question['question_id']}}" id="{{question['question_id']}}" class="form-control form-control-add">
+                        {% endif %}
+                        {% if question['type']=='image' %}
+                            <input type="file" name="{{question['question_id']}}" id="{{question['question_id']}}" accept="image/*" class="form-control form-control-add">
+                        {% endif %}
+                        {% if question['type']=='coordinates' %}
+
+                            <div class="input-group">
+                                <input type="text" name="{{question['question_id']}}" id="{{question['question_id']}}" class="form-control form-control-add">
+                                <div class="input-group-text" id="basic-addon2">
+                                    <button type="button" class="form-control form-control-add get_coords" target_id="{{question['question_id']}}">
+                                        <img src="{{ url_for('static',filename='img/locator.png') }}" height="20" alt="P">
+                                    </button>
+                                </div>
+                            </div>
+                            
+                        {% endif %}
+                        {% if question['type']=='dropdown' %}
+                            <select name="{{question['question_id']}}" id="" class="form-select form-control-add" >
+                                {% for option in question['options'] %}
+                                    <option value="{{option['option_id']}}">{{option['option_text']}}</option>
+                                {% endfor %}
+                            </select>
+                        {% endif %}
+                        <br>
+                    </div>
+                {% endfor %}
+                <div class="submit-btn">
+                    <button type="submit" class="btn btn-primary submit-btn  form-control-add">Submit</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    let elements = document.getElementsByClassName('question-container')
+
+    window.setTimeout(()=> {
+        for (let i = 0; i < elements.length; i++) {
+        const element = elements[i];
+        element.classList.add("question-container-start")
+    }
+    }, 100)
+
+
+    let btns = document.getElementsByClassName('get_coords')
+
+    for (let i = 0; i < btns.length; i++) {
+        const element = btns[i];
+        let id = element.getAttribute('target_id')
+
+        let e = document.getElementById(id)
+        
+        element.addEventListener('click', ()=>{
+            console.log(id, 34)
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    const latitude = position.coords.latitude;
+                    const longitude = position.coords.longitude;
+                    console.log(`Latitude: ${latitude}, Longitude: ${longitude}`);
+                    e.value = `${latitude}, ${longitude}`;
+                });
+            } else {
+            console.log("Geolocation is not supported by this browser.");
+            }
+        })
+    }
+    
+</script>
+
+{% endblock %}

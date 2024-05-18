@@ -58,20 +58,53 @@ header{
     transition: all 0.1s linear;
 }
 
+.top{
+    display: flex;
+    padding: 0.3em 2em;
+    backdrop-filter: blur(3px);
+    border-bottom: 1pt solid var(--bBlue100);
+    box-shadow: 0 5px 10px var(--bBlue100);
+    min-width: 10em;
+}
+
+.profile img{
+    border: 2px solid var(--bGreen);
+    border-radius: 50%;
+    width: 20pt;
+    height: 20pt;
+    padding: 1px;
+}
+
 .navtabsleft{
     display: flex;
     flex-direction: row;
 }
 
-.navtabsright{
+.navtabsleftforms{
     display: flex;
     flex-direction: row;
+    width: 70%;
+}
+
+.navtabsrightforms{
+    display: flex;
+    flex-direction: row;
+    width: 70%;
+    align-items:end;
+    justify-content: end;
 }
 
 .navtab{
     display: flex;
     flex-direction: row;
     padding: 1em 2em;
+    font-size: 1.1em;
+}
+
+.navtabforms{
+    display: flex;
+    flex-direction: row;
+    padding: 1em 1em;
     font-size: 1.1em;
 }
 
@@ -93,4 +126,9 @@ header{
     width: 100%;
     border-bottom: 1pt solid var(--bBlue100);
     box-shadow: 0 5px 5px var(--bBlue100);
+}
+
+#island{
+    /* padding-bottom: 5pt; */
+    margin-top:  -5pt;
 }
