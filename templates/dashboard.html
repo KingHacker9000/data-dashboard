@@ -4,6 +4,7 @@
 
 {% block head %}
 <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/dashboard_styles.css') }}">
+<link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/form_styles.css') }}">
 <link rel="icon" href="{{ url_for('static',filename='img/dash.png') }}" type="image/icon type">
 {% endblock %}
 {% block body %}
@@ -12,13 +13,72 @@
     Dashboard
 </div>
 
+<script>
+    link = document.getElementById('link')
+    box = document.getElementsByClassName('share-tray')[0]
+    var copyBtn = document.getElementById('copy_btn')
+
+    function copy_text(){
+        box.classList.add('share-tray-display')
+        window.setTimeout(()=>{
+            box.classList.add('share-tray-active')
+        }, 10)
+        link.focus();
+        link.select();
+        var successful = document.execCommand('copy');
+        var msg = successful ? 'successful' : 'unsuccessful';
+        console.log(msg)
+    }
+
+    copyBtn.addEventListener('click', function(event) {
+        copy_text();
+    });
+
+</script>
+
 <div class="data-container-holder">
-    <div class="data-container">
+    <!-- <div class="data-container">
         NO DATA Available
         <div class="data-header-container">
         </div>
         <div class="data-table-container">
         </div>
+    </div> -->
+
+    <div class="scroll">
+        <table class="table table-space">
+            <thead>
+              <tr>
+                {% for q in questions %}
+                    <th scope="col">{{q}}</th>
+                {% endfor %}
+              </tr>
+            </thead>
+            <tbody>
+                {% for response in responses %}
+                    <tr id="{{response['submission_id']}}">
+                        {% for ans in response['answers'] %}
+                            {% if ans['type'] == 'text' %}
+                                <td class="data">{{ans['value']}}</th>
+                            {% endif %}
+
+                            {% if ans['type'] == 'image' %}
+                                <td class="data">
+                                    <img src="data:image/png;base64,{{ans['value']}}" alt="img" width="30">
+                                </th>
+                            {% endif %}
+
+                            {% if ans['type'] == 'none' %}
+                                <td class="data">
+                                    ~
+                                </th>
+                            {% endif %}
+
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+            </tbody>
+          </table>
     </div>
 </div>
 
@@ -32,6 +92,15 @@
         element.classList.add("data-container-start")
     }
     }, 100)
+
+    elements = document.getElementsByClassName('table-row-link')
+
+    for (let i = 0; i < elements.length; i++) {
+        const element = elements[i];
+        element.addEventListener('click', () => {
+            console.log
+        })
+    }
     
 </script>
 

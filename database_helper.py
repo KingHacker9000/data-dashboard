@@ -1,5 +1,6 @@
 import psycopg2, os
 from psycopg2.extras import RealDictCursor
+import base64
 
 class Database:
 
@@ -167,7 +168,7 @@ class Database:
             
             for question_id in answers:
                 q = self.get_question(question_id)
-                q['answer'] = answers[question_id]
+                q['answer'] = answers[question_id] if q['type'] != 'image' else files[q['question_id']].read()
 
                 print(q)
 
@@ -211,6 +212,40 @@ class Database:
                 elif q['type'] == 'dropdown':
 
                     insert_query = "INSERT INTO dropdown_answers (answer_id, dropdown_question_option_id) VALUES (%s, %s)"
+                    cursor.execute(insert_query, (form_ans_id, q['answer']))
+                    self.connection.commit()
+
+                elif q['type'] == 'image':
+
+                    print('Image found')
+
+                    insert_query = "INSERT INTO image_answers (answer_id, answer) VALUES (%s, %s)"
+                    cursor.execute(insert_query, (form_ans_id, q['answer']))
+                    self.connection.commit()
+
+            for question_id in files:
+                q = self.get_question(question_id)
+                q['answer'] = files[question_id].read()
+
+                #print(q)
+
+                if q['form_id'] != form_id:
+                    print('Wrong Form Submission!')
+                    return False
+                
+                insert_query = "INSERT INTO form_answers (question_id, form_submission_id) VALUES (%s, %s)"
+                cursor.execute(insert_query, (question_id, form_sub_id))
+                self.connection.commit()
+
+                select_query = "SELECT * FROM form_answers WHERE question_id=%s AND form_submission_id=%s ORDER BY form_answer_id DESC LIMIT 1"
+                cursor.execute(select_query, (question_id, form_sub_id))
+                form_ans_id = int(cursor.fetchone()['form_answer_id'])
+
+                if q['type'] == 'image':
+
+                    print('Image found')
+
+                    insert_query = "INSERT INTO image_answers (answer_id, answer) VALUES (%s, %s)"
                     cursor.execute(insert_query, (form_ans_id, q['answer']))
                     self.connection.commit()
 
@@ -263,23 +298,47 @@ class Database:
                     if question['type'] == 'text':
                         select_query = "SELECT * FROM text_answers WHERE answer_id=%s"
                         cursor.execute(select_query, (a_id,))
-                        answers.append(cursor.fetchone()['answer'] or '')
+                        val = {
+                            'type': 'text',
+                            'value': cursor.fetchone()['answer'] or ''
+                        }
+                        answers.append(val)
 
                     elif question['type'] == 'numeric':
                         select_query = "SELECT * FROM numeric_answers WHERE answer_id=%s"
                         cursor.execute(select_query, (a_id,))
                         ans = cursor.fetchone()
-                        answers.append(float(ans['answer']) if ans is not None and str(ans['answer']).isnumeric() else '')
+
+                        val = {
+                            'type': 'text',
+                            'value': ans['answer'] if ans is not None else ''
+                        }
+
+                        answers.append(val)
 
                     elif question['type'] == 'date':
                         select_query = "SELECT * FROM date_answers WHERE answer_id=%s"
                         cursor.execute(select_query, (a_id,))
-                        answers.append(cursor.fetchone()['answer'] or '')
+                        ans = cursor.fetchone()
+
+                        val = {
+                            'type': 'text',
+                            'value': ans['answer'] if ans is not None else ''
+                        }
+                        
+                        answers.append(val)
                     
                     elif question['type'] == 'coordinates':
                         select_query = "SELECT * FROM text_answers WHERE answer_id=%s"
                         cursor.execute(select_query, (a_id,))
-                        answers.append(cursor.fetchone()['answer'] or '')
+                        ans = cursor.fetchone()
+
+                        val = {
+                            'type': 'text',
+                            'value': ans['answer'] if ans is not None else ''
+                        }
+
+                        answers.append(val)
 
                     elif question['type'] == 'dropdown':
                         select_query = "SELECT * FROM dropdown_answers WHERE answer_id=%s"
@@ -288,12 +347,35 @@ class Database:
 
                         select_query = "SELECT * FROM dropdown_question_options WHERE dropdown_question_option_id=%s"
                         cursor.execute(select_query, (ddq_id,))
-                        answers.append(cursor.fetchone()['dropdown_question_option'] or '')
 
-                    else:
-                        answers.append('IMAGE DA')
+                        val = {
+                            'type': 'text',
+                            'value': cursor.fetchone()['dropdown_question_option'] or ''
+                        }
 
-                form_responses.append(answers)
+                        answers.append(val)
+
+                    elif question['type'] == 'image':
+                        select_query = "SELECT * FROM image_answers WHERE answer_id=%s"
+                        cursor.execute(select_query, (a_id,))
+                        ans = cursor.fetchone()
+
+                        if ans is None:
+                            answers.append({'type': 'none'})
+                            continue
+                        img = base64.b64encode(ans['answer'])
+
+                        val = {
+                            'type': 'image',
+                            'value': img.decode('utf-8'),
+                            'answer_id': a_id
+                        }
+                        answers.append(val)
+
+                form_responses.append({
+                    'answers': answers,
+                    'submission_id': sub['form_submission_id']
+                })
 
             print('done')
             cursor.close()
@@ -304,6 +386,153 @@ class Database:
             print(error)
             return False
 
+
+    def get_response(self, form_id, user_id, submission_id):
+        try:
+
+            cursor = self.connection.cursor(cursor_factory=RealDictCursor)
+
+            if not self.has_read_access(form_id, user_id):
+                return False
+            
+            select_query = "SELECT * FROM questions WHERE form_id=%s ORDER BY position"
+            cursor.execute(select_query, (form_id,))
+            questions = cursor.fetchall()
+            form_questions = [q['question_text'] for q in questions]
+
+            questions = [self.get_question(question['question_id']) for question in questions]
+
+            select_query = "SELECT * FROM form_submissions WHERE form_submission_id=%s"
+            cursor.execute(select_query, (submission_id,))
+            sub = cursor.fetchone()
+
+            select_query = "SELECT * FROM users where user_id=%s"
+            cursor.execute(select_query, (user_id,))
+            user = cursor.fetchone()
+            submission_details = {
+                'user': user['name'],
+                'email': user['email'],
+                'submission time': sub['submitted_at']
+            }
+
+            answers = []
+            for question in questions:
+                
+                select_query = 'SELECT * FROM form_answers WHERE question_id=%s AND form_submission_id=%s'
+                cursor.execute(select_query, (question['question_id'], sub['form_submission_id']))
+                a = cursor.fetchone()
+
+                if a is None:
+                    answers.append('')
+                    continue
+
+                a_id = a['form_answer_id']
+
+                if question['type'] == 'text':
+                    select_query = "SELECT * FROM text_answers WHERE answer_id=%s"
+                    cursor.execute(select_query, (a_id,))
+                    val = {
+                        'type': 'text',
+                        'value': cursor.fetchone()['answer'] or ''
+                    }
+                    answers.append(val)
+
+                elif question['type'] == 'numeric':
+                    select_query = "SELECT * FROM numeric_answers WHERE answer_id=%s"
+                    cursor.execute(select_query, (a_id,))
+                    ans = cursor.fetchone()
+
+                    val = {
+                        'type': 'text',
+                        'value': ans['answer'] if ans is not None else ''
+                    }
+
+                    answers.append(val)
+
+                elif question['type'] == 'date':
+                    select_query = "SELECT * FROM date_answers WHERE answer_id=%s"
+                    cursor.execute(select_query, (a_id,))
+                    ans = cursor.fetchone()
+
+                    val = {
+                        'type': 'text',
+                        'value': ans['answer'] if ans is not None else ''
+                    }
+                    
+                    answers.append(val)
+                
+                elif question['type'] == 'coordinates':
+                    select_query = "SELECT * FROM text_answers WHERE answer_id=%s"
+                    cursor.execute(select_query, (a_id,))
+                    ans = cursor.fetchone()
+
+                    val = {
+                        'type': 'text',
+                        'value': ans['answer'] if ans is not None else ''
+                    }
+
+                    answers.append(val)
+
+                elif question['type'] == 'dropdown':
+                    select_query = "SELECT * FROM dropdown_answers WHERE answer_id=%s"
+                    cursor.execute(select_query, (a_id,))
+                    ddq_id = cursor.fetchone()['dropdown_question_option_id']
+
+                    select_query = "SELECT * FROM dropdown_question_options WHERE dropdown_question_option_id=%s"
+                    cursor.execute(select_query, (ddq_id,))
+
+                    val = {
+                        'type': 'text',
+                        'value': cursor.fetchone()['dropdown_question_option'] or ''
+                    }
+
+                    answers.append(val)
+
+                elif question['type'] == 'image':
+                    select_query = "SELECT * FROM image_answers WHERE answer_id=%s"
+                    cursor.execute(select_query, (a_id,))
+                    ans = cursor.fetchone()
+
+                    if ans is None:
+                        answers.append({'type': 'none'})
+                        continue
+                    img = base64.b64encode(ans['answer'])
+
+                    val = {
+                        'type': 'image',
+                        'value': img.decode('utf-8')
+                    }
+                    answers.append(val)
+
+            return form_questions, answers, submission_details
+
+        except (psycopg2.Error) as error:
+            print(error)
+            return False
+        
+    def get_image(self, user_id, form_id, answer_id):
+
+        try:
+
+            cursor = self.connection.cursor(cursor_factory=RealDictCursor)
+
+            if not self.has_read_access(form_id, user_id):
+                return False
+
+            select_query = "SELECT * FROM image_answers WHERE answer_id=%s"
+            cursor.execute(select_query, (answer_id,))
+            ans = cursor.fetchone()
+
+            if ans is None:
+                return False
+
+            img = base64.b64encode(ans['answer'])
+
+            return img.decode('utf-8')
+
+        except (psycopg2.Error) as error:
+            print(error)
+            return False
 
 if __name__ == '__main__':
     db = Database()

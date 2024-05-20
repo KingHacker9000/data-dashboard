@@ -18,6 +18,11 @@ import pandas as pd
 
 from database_helper import Database
 
+import datetime
+from io import BytesIO
+import base64
+import imghdr
+
 # Create Flask Application
 app = Flask(__name__)
 
@@ -94,7 +99,43 @@ def callback():
 @login_required
 def dashboard(form_id):
     session['last_visited'] = f'/{form_id}/dashboard'
-    return render_template("dashboard.html", form_id=form_id)
+
+    qns, res = DATABASE.get_all_responses(form_id, session['user_id'])
+
+    form_name = DATABASE.get_form_name(form_id)
+
+    return render_template("dashboard.html", form_id=form_id, site_url='http://127.0.0.1:5000', photo_uri=session['photo_uri'],
+                           form_name=form_name, questions=qns, responses=res)
+
+
+@app.route("/<form_id>/<submission_id>")
+@login_required
+def view_entry(form_id, submission_id):
+    session['last_visited'] = f'/{form_id}/{submission_id}'
+
+    qns, res, sub_details = DATABASE.get_response(form_id, session['user_id'], submission_id)
+    form_name = DATABASE.get_form_name(form_id)
+
+    return render_template("entry.html", form_id=form_id, site_url='http://127.0.0.1:5000', photo_uri=session['photo_uri'],
+                           form_name=form_name, questions=qns, response=res, submission_details=sub_details)
+
+
+@app.route("/<form_id>/image/<answer_id>")
+@login_required
+def get_image(form_id, answer_id):
+    session['last_visited'] = f'/{form_id}/image/{answer_id}'
+    
+    # Decode the base64 string
+    image_str = DATABASE.get_image(session['user_id'], form_id, answer_id)
+    
+    # Convert the bytes to a BytesIO object
+    image_data = base64.b64decode(image_str)
+    image = BytesIO(image_data)
+    image_type = imghdr.what(None, h=image_data)
+
+    # Send the image as a response
+    return send_file(image, mimetype=f'image/{image_type}')
+
 
 @app.route("/<form_id>/export")
 @login_required
@@ -117,7 +158,17 @@ def exportfile(form_id):
     writer.writerow(qns)
 
     for row in res:
-        writer.writerow(row)
+        answers = []
+        for answer in row['answers']:
+            if not isinstance(answer, str) and 'value' in answer:
+                if answer['type'] == 'text':
+                    answers.append(answer['value'])
+                elif answer['type'] == 'image':
+                    url = 'http://127.0.0.1:5000/'
+                    answers.append(f"{url}{form_id}/image/{answer['answer_id']}")
+            else:
+                answers.append('')
+        writer.writerow(answers)
 
     file.close()
 
@@ -158,6 +209,7 @@ def answer_form(form_id):
             return error('Form Does Not Exist or No Access')
         return render_template('form.html', questions=questions, form_name=form_name, form_id=form_id, photo_uri=session['photo_uri'])
     
+    print('FILES:', request.files['26'])
     DATABASE.submit_form(int(form_id), session['user_id'], request.form, request.files)
 
     return render_template('form_submitted.html', photo_uri=session['photo_uri'])

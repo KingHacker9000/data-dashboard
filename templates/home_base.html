@@ -25,12 +25,26 @@
                 <!-- <div class="navtab">Edit</div> -->
             </div>
             <div class="navtabsright">
-                <div class="navicon navtab">
-                    <img src="{{ url_for('static',filename='img/settings.svg') }}" alt="Settings" width="25">
+                <div class="icons-left icons-holder">
+                    <div class="share-tray navicon navtabsright">
+                        <input type="text" id="link" value="{{site_url}}/{{form_id}}/form" class="form-control form-control-add" height="25">
+                    </div>
+                    <div class="navicon navtabsright" id="copy_btn">
+                            <img class="icon" src="{{ url_for('static',filename='img/share.png') }}" alt="Share">
+                    </div>
+                    <div class="navicon navtabsright">
+                        <img class="icon" src="{{ url_for('static',filename='img/settings.svg') }}" alt="Settings">
+                    </div>
                 </div>
                 <hr width="1.2" size="1"/>
-                <div class="navlogout navtab">
-                    <a href="/logout">Log out</a>
+
+                <div class="icons-right icons-holder">
+                    <div class="profile navtabsright">
+                        <img src="{{photo_uri}}" alt="google_photo">
+                    </div>
+                    <div class="navlogout navtabsright">
+                        <a href="/logout">Log out</a>
+                    </div>
                 </div>
 
             </div>

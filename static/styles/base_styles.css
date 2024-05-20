@@ -79,6 +79,18 @@ header{
     display: flex;
     flex-direction: row;
 }
+.navtabsright{
+    display: flex;
+    flex-direction: row;
+    padding: 0.6em 1em;
+    font-size: 1.1em;
+}
+
+.icons-holder{
+    display: flex;
+    flex-direction: row;
+    padding: 0 1em;
+}
 
 .navtabsleftforms{
     display: flex;
@@ -97,7 +109,7 @@ header{
 .navtab{
     display: flex;
     flex-direction: row;
-    padding: 1em 2em;
+    padding: 0.6em 1.5em;
     font-size: 1.1em;
 }
 
@@ -108,11 +120,55 @@ header{
     font-size: 1.1em;
 }
 
+.navicon{
+    margin-right: 5pt;
+}
+
+.icon{
+    width: 35px;
+    height: 35px;
+}
+
+.share-tray{
+    margin-top: 0px;
+    width: 0;
+    float: left;
+    display:none;
+}
+
+.share-tray-display{
+    display:block;
+    width: 0;
+    float: left;
+    -webkit-transition: all 0.5s ease-out;
+    -moz-transition: all 0.5s ease-out;
+    -o-transition: all 0.5s ease-out;
+    transition: all 0.5s ease-out;
+}
+
+.share-tray-active{
+    display: block;
+    width: 15em;
+}
+
+.icon{
+    padding: 7px;
+}
+
+.icon:hover{
+    background-color: #f6f6f6;
+    border-radius: 50%;
+}
+.icon:active{
+    background-color: #bbb;
+    border-radius: 50%;
+}
+
 .largeText{
     font-size: 72pt;
     text-align: center;
     font-weight: 200;
-    padding: 1.5em 0 2em 0;
+    padding: 2em 0 2.5em 0;
     color: #333;
 }
 
