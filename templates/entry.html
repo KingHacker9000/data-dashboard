@@ -1,0 +1,58 @@
+{% extends 'home_base.html' %}
+
+{% block title %} Dashboard {% endblock %}
+
+{% block head %}
+<link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/dashboard_styles.css') }}">
+<link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/form_styles.css') }}">
+<link rel="icon" href="{{ url_for('static',filename='img/dash.png') }}" type="image/icon type">
+{% endblock %}
+{% block body %}
+
+<div class="access-form-holder">
+    <div class="form-name">
+        {{form_name}}
+    </div>
+
+    <div class="submission-details">
+        <span class="submission-d-title">
+            Submitted By
+        </span>
+        <br>
+        {{submission_details['user']}}
+        <br>
+        {{submission_details['email']}}
+        <br>
+        {{submission_details['submission time'].date()}}
+    </div>
+
+    <div class="entry-details">
+        {% for i in range(questions|length) %}
+
+            <div class="entry-qr">
+                <div class="entry-question">
+                    {{questions[i]}}
+                </div>
+                {% if response[i]['type'] == 'text' %}
+                    <div class="entry-answer">
+                        {{response[i]['value']}}
+                    </div>
+                {% endif %}
+                {% if response[i]['type'] == 'image' %}
+                    <div class="entry-answer">
+                        <img class="entry-answer-img" src="data:image/png;base64,{{response[i]['value']}}" alt="img">
+                    </div>
+                {% endif %}
+            </div>
+
+        {% endfor %}
+
+        <form action="/{{form_id}}/response/{{submission_id}}" method="post">
+            <button type="submit" class="btn btn-primary delete-btn">Delete Response <img src="{{ url_for('static',filename='img/close.png') }}" alt="close"></button>
+        </form>
+    </div>
+    
+</div>
+    
+
+{% endblock %}

@@ -1,0 +1,40 @@
+{% extends 'form_base.html' %}
+
+{% block title %} Dashboard {% endblock %}
+
+{% block head %}
+<link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/dashboard_styles.css') }}">
+<link rel="icon" href="{{ url_for('static',filename='img/dash.png') }}" type="image/icon type">
+{% endblock %}
+{% block body %}
+
+<div class="error-holder">
+    <div class="error-text">
+        Oops! Seems like you're not supposed to be here
+    </div>
+    <div class="error-data">
+        Error: {{error_message}}
+    </div>
+
+    <div class="largeText">
+        xP
+    </div>
+</div>
+
+<style>
+    .error-holder{
+        width: 80%;
+        margin: auto;
+        margin-top: 3em;
+    }
+
+    .error-text{
+        font-size: 24pt;
+    }
+
+    .error-data{
+        font-weight: 300;
+    }
+</style>
+
+{% endblock %}

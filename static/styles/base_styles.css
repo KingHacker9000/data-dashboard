@@ -188,3 +188,18 @@ header{
     /* padding-bottom: 5pt; */
     margin-top:  -5pt;
 }
+
+
+footer{
+    width: 100%;
+    background-color: #222;
+    min-height: 5em;
+    color: #fff;
+}
+
+.dev-details{
+    width: 70%;
+    font-size: 11pt;
+    margin: auto;
+    padding-top: 3em;
+}

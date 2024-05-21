@@ -1,0 +1,35 @@
+{% extends 'home_base.html' %}
+
+{% block title %} Dashboard {% endblock %}
+
+{% block head %}
+<link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/dashboard_styles.css') }}">
+<link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/form_styles.css') }}">
+<link rel="icon" href="{{ url_for('static',filename='img/dash.png') }}" type="image/icon type">
+{% endblock %}
+{% block body %}
+
+<div class="access-form-holder">
+    <form action="./access" method="post">
+        <div class="access-label form-name">
+            Form Access
+        </div>
+        <div class="access-form-input">
+            <label for="user_role">User Role:</label>
+            <select name="user_role" id="" class="form-select form-control-add">
+                <option value="3" class="form-control">Responder</option>
+                <option value="2" class="form-control">Viewer</option>
+                <option value="1" class="form-control">Editor</option>
+            </select>
+        </div>
+        <div class="access-form-input">
+            <label for="email">User Email:</label>
+            <input type="email" name="email" id="" class="form-control form-control-add">
+        </div>
+        <div class="access-form-input">
+            <button type="submit" class="btn btn-primary btn-blue">Add Role</button>
+        </div>
+    </form>
+</div>
+
+{% endblock %}

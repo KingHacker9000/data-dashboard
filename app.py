@@ -1,7 +1,8 @@
 from flask import Flask, render_template, request, session, send_file, redirect
 from flask_session import Session
 from tempfile import mkdtemp
-from helpers import login_required, error
+from helpers import login_required, check_access
+from errors import error, AppError
 import csv
 import os
 import threading
@@ -97,31 +98,47 @@ def callback():
 
 @app.route("/<form_id>/dashboard")
 @login_required
+@check_access
 def dashboard(form_id):
     session['last_visited'] = f'/{form_id}/dashboard'
 
-    qns, res = DATABASE.get_all_responses(form_id, session['user_id'])
+    try:
+        qns, res = DATABASE.get_all_responses(form_id, session['user_id'])
 
-    form_name = DATABASE.get_form_name(form_id)
+        form_name = DATABASE.get_form_name(form_id)
 
-    return render_template("dashboard.html", form_id=form_id, site_url='http://127.0.0.1:5000', photo_uri=session['photo_uri'],
-                           form_name=form_name, questions=qns, responses=res)
+        return render_template("dashboard.html", form_id=form_id, site_url='http://127.0.0.1:5000', photo_uri=session['photo_uri'],
+                            form_name=form_name, questions=qns, responses=res)
+    
+    except AppError as e:
+        return e.render()
 
 
-@app.route("/<form_id>/<submission_id>")
+@app.route("/<form_id>/response/<submission_id>", methods=["GET", "POST"])
 @login_required
+@check_access
 def view_entry(form_id, submission_id):
     session['last_visited'] = f'/{form_id}/{submission_id}'
 
-    qns, res, sub_details = DATABASE.get_response(form_id, session['user_id'], submission_id)
-    form_name = DATABASE.get_form_name(form_id)
+    if request.method == "GET":
+        try:
+            qns, res, sub_details = DATABASE.get_response(form_id, session['user_id'], submission_id)
+            form_name = DATABASE.get_form_name(form_id)
 
-    return render_template("entry.html", form_id=form_id, site_url='http://127.0.0.1:5000', photo_uri=session['photo_uri'],
-                           form_name=form_name, questions=qns, response=res, submission_details=sub_details)
+            return render_template("entry.html", form_id=form_id, site_url='http://127.0.0.1:5000', photo_uri=session['photo_uri'],
+                                form_name=form_name, questions=qns, response=res, submission_details=sub_details, submission_id=submission_id)
+        
+        except AppError as e:
+            return e.render()
+        
+    DATABASE.delete_entry(form_id, submission_id)
+    
+    return redirect(f'/{form_id}/dashboard')
 
 
 @app.route("/<form_id>/image/<answer_id>")
 @login_required
+@check_access
 def get_image(form_id, answer_id):
     session['last_visited'] = f'/{form_id}/image/{answer_id}'
     
@@ -139,12 +156,14 @@ def get_image(form_id, answer_id):
 
 @app.route("/<form_id>/export")
 @login_required
+@check_access
 def export(form_id):
     session['last_visited'] = f'/{form_id}/export'
     return render_template("export.html", form_id=form_id)
 
 @app.route("/<form_id>/exportfile")
 @login_required
+@check_access
 def exportfile(form_id):
 
     qns, res = DATABASE.get_all_responses(form_id, session['user_id'])
@@ -187,6 +206,22 @@ def exportfile(form_id):
     t.start()
 
     return send_file(file_out)
+
+@app.route("/<form_id>/access", methods=["GET", "POST"])
+@login_required
+@check_access
+def access(form_id):
+
+    if request.method == "GET":
+        form_name = DATABASE.get_form_name(form_id)
+        return render_template("access.html", form_id=form_id, photo_uri=session['photo_uri'],
+                           form_name=form_name)
+    
+    email = request.form['email']
+    role = request.form['user_role']
+
+    DATABASE.update_access(email, role, form_id)
+    return redirect(f'/{form_id}/dashboard')
 
 @app.route("/logout")
 def logout():

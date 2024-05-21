@@ -20,8 +20,9 @@
         <div class="navbar" id="navbar">
             <div class="navtabsleft">
                 <div class="logo navtab" id='island'><a href="/"><img class="" src="{{ url_for('static',filename='img/island.png') }}" alt="I" width='40'></a></div>
-                <div class="navtab"><a href="./dashboard">Dashboard</a></div>
-                <div class="navtab"><a href="./export">Export</a></div>
+                <div class="navtab"><a href="/{{form_id}}/dashboard">Dashboard</a></div>
+                <div class="navtab"><a href="/{{form_id}}/export">Export</a></div>
+                <div class="navtab"><a href="/{{form_id}}/access">Access</a></div>
                 <!-- <div class="navtab">Edit</div> -->
             </div>
             <div class="navtabsright">
@@ -55,6 +56,12 @@
         </div>
     </header>
     {% block body %}{% endblock %}
+
+    <footer>
+        <div class="dev-details">
+            © Ashish Ajin Thomas
+        </div>
+    </footer>
 </body>
 </html>
 

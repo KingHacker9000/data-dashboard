@@ -1,6 +1,7 @@
 import psycopg2, os
 from psycopg2.extras import RealDictCursor
 import base64
+from errors import AppError
 
 class Database:
 
@@ -193,8 +194,8 @@ class Database:
                 elif q['type'] == 'numeric':
 
                     insert_query = "INSERT INTO numeric_answers (answer_id, answer) VALUES (%s, %s)"
-                    if q['answer'].isnumeric():
-                        cursor.execute(insert_query, (form_ans_id, float(q['answer'])))
+                    if q['answer']:
+                        cursor.execute(insert_query, (form_ans_id, q['answer']))
                         self.connection.commit()
 
                 elif q['type'] == 'date':
@@ -266,7 +267,7 @@ class Database:
             cursor = self.connection.cursor(cursor_factory=RealDictCursor)
 
             if not self.has_read_access(form_id, user_id):
-                return False
+                raise AppError('No Access')
             
             select_query = "SELECT * FROM questions WHERE form_id=%s ORDER BY position"
             cursor.execute(select_query, (form_id,))
@@ -384,7 +385,7 @@ class Database:
 
         except (psycopg2.Error) as error:
             print(error)
-            return False
+            raise AppError('PSQL Error')
 
 
     def get_response(self, form_id, user_id, submission_id):
@@ -405,6 +406,8 @@ class Database:
             select_query = "SELECT * FROM form_submissions WHERE form_submission_id=%s"
             cursor.execute(select_query, (submission_id,))
             sub = cursor.fetchone()
+            if sub is None:
+                raise AppError('Submission Does Not Exist')
 
             select_query = "SELECT * FROM users where user_id=%s"
             cursor.execute(select_query, (user_id,))
@@ -533,6 +536,91 @@ class Database:
         except (psycopg2.Error) as error:
             print(error)
             return False
+        
+    def update_access(self, email, role, form_id):
+
+        try:
+            cursor = self.connection.cursor(cursor_factory=RealDictCursor)
+
+            select_query = "SELECT * FROM users WHERE email=%s"
+            cursor.execute(select_query, (email,))
+            user = cursor.fetchone()
+
+            if user is None:
+                raise AppError(f'User {email} must sign up first')
+            
+            select_query = "SELECT * FROM forms_access WHERE user_id=%s and form_id=%s"
+            cursor.execute(select_query, (user['user_id'], form_id))
+            user_role = cursor.fetchone()
+
+            if user_role is None:
+                insert_query = "INSERT INTO forms_access (form_id, user_id, user_role_id) VALUES (%s, %s, %s)"
+                cursor.execute(insert_query, (form_id, user['user_id'], role))
+
+            elif user_role['user_role_id'] == role:
+                raise AppError(f"User {email} already has this role")
+            
+            else:
+                update_query = "UPDATE forms_access SET user_role_id=%s WHERE form_id=%s AND user_id=%s"
+                cursor.execute(update_query, (role, form_id, user['user_id']))
+            
+            self.connection.commit()
+            return True
+
+        except (psycopg2.Error) as error:
+            print(error)
+            return False
+        
+
+    def delete_entry(self, form_id, submission_id):
+        
+        try:
+            cursor = self.connection.cursor(cursor_factory=RealDictCursor)
+            select_query = "SELECT * FROM form_answers WHERE form_submission_id=%s"
+            cursor.execute(select_query, (submission_id,))
+            questions = cursor.fetchall()
+
+            for q in questions:
+                question = self.get_question(q['question_id'])
+                a_id = q['form_answer_id']
+
+                if question['type'] == 'text':
+                    select_query = "DELETE FROM text_answers WHERE answer_id=%s"
+                    cursor.execute(select_query, (a_id,))
+
+                elif question['type'] == 'numeric':
+                    select_query = "DELETE FROM numeric_answers WHERE answer_id=%s"
+                    cursor.execute(select_query, (a_id,))
+
+                elif question['type'] == 'date':
+                    select_query = "DELETE FROM date_answers WHERE answer_id=%s"
+                    cursor.execute(select_query, (a_id,))
+
+                elif question['type'] == 'coordinates':
+                    select_query = "DELETE FROM text_answers WHERE answer_id=%s"
+                    cursor.execute(select_query, (a_id,))
+
+                elif question['type'] == 'dropdown':
+                    select_query = "DELETE FROM dropdown_answers WHERE answer_id=%s"
+                    cursor.execute(select_query, (a_id,))
+
+                elif question['type'] == 'image':
+                    select_query = "DELETE FROM image_answers WHERE answer_id=%s"
+                    cursor.execute(select_query, (a_id,))
+           
+            select_query = "DELETE FROM form_answers WHERE form_submission_id=%s"
+            cursor.execute(select_query, (submission_id,))
+
+            select_query = "DELETE FROM form_submissions WHERE form_submission_id=%s"
+            cursor.execute(select_query, (submission_id,))
+            self.connection.commit()
+
+            cursor.close()
+
+        except (psycopg2.Error) as error:
+            print(error)
+            return False
+
 
 if __name__ == '__main__':
     db = Database()

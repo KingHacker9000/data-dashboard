@@ -82,3 +82,75 @@
     max-width: 30em;
     overflow-y: visible;
 }
+
+.access-form-holder{
+    margin: auto;
+    margin-top: 2em;
+    width: 70%;
+    padding: 1em 2em;
+}
+
+.access-form-input{
+    margin-top: 2em;
+    margin-left: 1em;
+}
+
+.btn-blue{
+    background-color: var(--bBlue);
+    border-color: var(--bBlue);
+}
+
+.btn-blue:hover{
+    background-color: var(--bBlue700);
+    border-color: var(--bBlue700);
+}
+
+.entry-answer-img{
+    max-width: 80%;
+}
+
+.entry-details{
+    margin-left: 2em;
+    margin-top: 2em;
+}
+
+.entry-question{
+    font-weight: 400;
+    font-size: 18pt;
+}
+
+.entry-answer{
+    font-weight: 300;
+    margin-left: 20px;
+    color: #555;
+}
+
+.entry-qr{
+    margin-bottom: 3em;
+}
+
+.submission-details{
+    font-weight: 300;
+    float: right;
+    text-align: end;
+}
+
+.submission-d-title{
+    font-weight: 400;
+}
+
+.delete-btn{
+    background-color: red;
+    border-color: red;
+    margin-left: 3em;
+}
+
+.delete-btn:hover{
+    background-color: rgb(220, 0, 0);
+    border-color: rgb(220, 0, 0);
+}
+
+.delete-btn:active{
+    background-color: rgb(154, 0, 0);
+    border-color: rgb(154, 0, 0);
+}
