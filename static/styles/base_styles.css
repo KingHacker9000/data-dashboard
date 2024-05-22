@@ -48,7 +48,9 @@ header{
 
 .navbar{
     display: flex;
+    position: fixed;
     padding: 0.3em 5em;
+    width: 100%;
     backdrop-filter: blur(3px);
     border-bottom: 0pt solid var(--bBlue100);
     box-shadow: 0 0px 0px var(--bBlue100);
@@ -202,4 +204,9 @@ footer{
     font-size: 11pt;
     margin: auto;
     padding-top: 3em;
+}
+
+main{
+    min-height: 8in;
+    padding-top: 1in;
 }

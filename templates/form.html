@@ -19,7 +19,7 @@
                             {{question['text']}}
                         </div>
                         {% if question['type']=='date' %}
-                            <input type="date" name="{{question['question_id']}}" id="{{question['question_id']}}" class="form-control form-control-add">
+                            <input type="date" required name="{{question['question_id']}}" id="{{question['question_id']}}" class="form-control form-control-add">
                         {% endif %}
                         {% if question['type']=='text' %}
                             <input type="text" name="{{question['question_id']}}" id="{{question['question_id']}}" class="form-control form-control-add">

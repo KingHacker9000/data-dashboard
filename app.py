@@ -39,13 +39,13 @@ app.secret_key = os.environ['client_secret']
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1" # to allow Http traffic for local dev
 
 client_secrets_file = os.path.join(pathlib.Path(__file__).parent, "client_secret.json")
+URL =  '15.206.68.83:5000' or 'http://127.0.0.1:5000'
 
 flow = Flow.from_client_secrets_file(
     client_secrets_file=client_secrets_file,
     scopes=["https://www.googleapis.com/auth/userinfo.profile", "https://www.googleapis.com/auth/userinfo.email", "openid"],
-    redirect_uri="http://127.0.0.1:5000/callback"
+    redirect_uri=f"{URL}/callback"
 )
-
 
 DATABASE = Database()
 
@@ -107,7 +107,7 @@ def dashboard(form_id):
 
         form_name = DATABASE.get_form_name(form_id)
 
-        return render_template("dashboard.html", form_id=form_id, site_url='http://127.0.0.1:5000', photo_uri=session['photo_uri'],
+        return render_template("dashboard.html", form_id=form_id, site_url=URL, photo_uri=session['photo_uri'],
                             form_name=form_name, questions=qns, responses=res)
     
     except AppError as e:
@@ -125,7 +125,7 @@ def view_entry(form_id, submission_id):
             qns, res, sub_details = DATABASE.get_response(form_id, session['user_id'], submission_id)
             form_name = DATABASE.get_form_name(form_id)
 
-            return render_template("entry.html", form_id=form_id, site_url='http://127.0.0.1:5000', photo_uri=session['photo_uri'],
+            return render_template("entry.html", form_id=form_id, site_url="/"+URL, photo_uri=session['photo_uri'],
                                 form_name=form_name, questions=qns, response=res, submission_details=sub_details, submission_id=submission_id)
         
         except AppError as e:
@@ -159,7 +159,7 @@ def get_image(form_id, answer_id):
 @check_access
 def export(form_id):
     session['last_visited'] = f'/{form_id}/export'
-    return render_template("export.html", form_id=form_id)
+    return render_template("export.html", form_id=form_id, photo_uri=session['photo_uri'])
 
 @app.route("/<form_id>/exportfile")
 @login_required
@@ -183,7 +183,7 @@ def exportfile(form_id):
                 if answer['type'] == 'text':
                     answers.append(answer['value'])
                 elif answer['type'] == 'image':
-                    url = 'http://127.0.0.1:5000/'
+                    url = URL
                     answers.append(f"{url}{form_id}/image/{answer['answer_id']}")
             else:
                 answers.append('')
