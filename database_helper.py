@@ -93,7 +93,7 @@ class Database:
         return True
 
 
-    def get_questions(self, form_id: int, user_id: int) -> list[dict] | bool:
+    def get_questions(self, form_id: int, user_id: int) -> list[dict]:
         try:
 
             cursor = self.connection.cursor(cursor_factory=RealDictCursor)
