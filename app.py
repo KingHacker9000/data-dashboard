@@ -39,7 +39,7 @@ app.secret_key = os.environ['client_secret']
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1" # to allow Http traffic for local dev
 
 client_secrets_file = os.path.join(pathlib.Path(__file__).parent, "client_secret.json")
-URL =  '15.206.68.83:5000' or 'http://127.0.0.1:5000'
+URL =  'http://15.206.68.83:5000' or 'http://127.0.0.1:5000'
 
 flow = Flow.from_client_secrets_file(
     client_secrets_file=client_secrets_file,
