@@ -131,3 +131,17 @@ thead{
 .scroll::-webkit-scrollbar-button:hover {
     background-color: #999999;
 }
+
+.time-period{
+    font-size: 24pt;
+    font-weight: 200;
+}
+
+.export-center{
+    margin: auto;
+}
+
+.table-title{
+    text-align: center;
+    color: var(--bBlue);
+}

@@ -23,6 +23,7 @@
                 <div class="navtab"><a href="/{{form_id}}/dashboard">Dashboard</a></div>
                 <div class="navtab"><a href="/{{form_id}}/export">Export</a></div>
                 <div class="navtab"><a href="/{{form_id}}/access">Access</a></div>
+                <div class="navtab"><a href="/{{form_id}}/edit">Edit</a></div>
                 <!-- <div class="navtab">Edit</div> -->
             </div>
             <div class="navtabsright">
@@ -34,7 +35,9 @@
                             <img class="icon" src="{{ url_for('static',filename='img/share.png') }}" alt="Share">
                     </div>
                     <div class="navicon navtabsright">
-                        <img class="icon" src="{{ url_for('static',filename='img/settings.svg') }}" alt="Settings">
+                        <a href="/{{form_id}}/settings">
+                            <img class="icon" src="{{ url_for('static',filename='img/settings.svg') }}" alt="Settings">
+                        </a>
                     </div>
                 </div>
                 <hr width="1.2" size="1"/>

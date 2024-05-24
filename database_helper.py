@@ -41,7 +41,15 @@ class Database:
 
         try:
             cursor = self.connection.cursor(cursor_factory=RealDictCursor)
-            q = "INSERT INTO users (google_id, name, email, google_photo_uri) VALUES (%s, %s, %s, %s);"
+            q = "SELECT * FROM users WHERE email=%s"
+            cursor.execute(q, (email,))
+            user = cursor.fetchone()
+            if user is not None:
+                q = "UPDATE users SET google_id=%s, name=%s, google_photo_uri=%s WHERE user_id=%s"
+                cursor.execute(q, (google_id, name, picture_uri, user['user_id']))
+                self.connection.commit()
+                return True
+            q = "INSERT INTO users (google_id, name, email, google_photo_uri) VALUES (%s, %s, %s, %s)"
             cursor.execute(q, (google_id, name, email, picture_uri))
             self.connection.commit()
             return True
@@ -81,16 +89,21 @@ class Database:
 
 
     def has_read_access(self, form_id: int, user_id: int) -> bool:
-        cursor = self.connection.cursor(cursor_factory=RealDictCursor)
+        try:
+            cursor = self.connection.cursor(cursor_factory=RealDictCursor)
 
-        select_query = "SELECT * FROM user_role WHERE user_role_id=(SELECT user_role_id FROM forms_access WHERE user_id = %s AND form_id = %s)"
-        cursor.execute(select_query, (user_id, form_id))
+            select_query = "SELECT * FROM user_role WHERE user_role_id=(SELECT user_role_id FROM forms_access WHERE user_id = %s AND form_id = %s)"
+            cursor.execute(select_query, (user_id, form_id))
 
-        role = cursor.fetchone()
+            role = cursor.fetchone()
 
-        if role is None or role['role_name'] not in ['CREATOR', 'VIEWER']:
+            if role is None or role['role_name'] not in ['CREATOR', 'VIEWER']:
+                return False
+            return True
+        except (Exception, psycopg2.Error) as error:
+            print(error)
             return False
-        return True
+        
 
 
     def get_questions(self, form_id: int, user_id: int) -> list[dict]:
@@ -111,7 +124,9 @@ class Database:
                 question = {
                     'text': q['question_text'],
                     'question_id': q['question_id'],
-                    'type': q['question_type']
+                    'type': q['question_type'],
+                    'type_id':q['question_type_id'],
+                    'position':q['position']
                 }
 
                 if q['question_type'] == 'dropdown':
@@ -260,7 +275,7 @@ class Database:
             return False
 
 
-    def get_all_responses(self, form_id: int, user_id: int):
+    def get_all_responses(self, form_id: int, user_id: int, period='at'):
 
         try:
 
@@ -275,7 +290,14 @@ class Database:
             form_questions = [q['question_text'] for q in questions]
             questions = [self.get_question(question['question_id']) for question in questions]
 
-            select_query = "SELECT * FROM form_submissions WHERE form_id=%s ORDER BY submitted_at DESC"
+            date_opt = {
+                'pd': 'AND submitted_at >= CURRENT_DATE',
+                'pw': "AND submitted_at >= CURRENT_DATE - INTERVAL '7 days'",
+                'py': "AND submitted_at >= CURRENT_DATE - INTERVAL '1 year'",
+                'at': ''
+            }
+
+            select_query = f"SELECT * FROM form_submissions WHERE form_id=%s {date_opt[period]} ORDER BY submitted_at DESC"
             cursor.execute(select_query, (form_id,))
             submissions = cursor.fetchall()
 
@@ -547,7 +569,11 @@ class Database:
             user = cursor.fetchone()
 
             if user is None:
-                raise AppError(f'User {email} must sign up first')
+                self.sign_up_user('', '', email, '')
+                #raise AppError(f'User {email} must sign up first')
+                select_query = "SELECT * FROM users WHERE email=%s"
+                cursor.execute(select_query, (email,))
+                user = cursor.fetchone()
             
             select_query = "SELECT * FROM forms_access WHERE user_id=%s and form_id=%s"
             cursor.execute(select_query, (user['user_id'], form_id))
@@ -620,6 +646,68 @@ class Database:
         except (psycopg2.Error) as error:
             print(error)
             return False
+        
+
+    def duplicate(self, form_id, form_name, user_id):
+
+        try:
+            cursor = self.connection.cursor(cursor_factory=RealDictCursor)
+            select_query = "INSERT INTO forms (form_name) VALUES (%s)"
+            cursor.execute(select_query, (form_name,))
+            self.connection.commit()
+            select_query = "SELECT * FROM forms WHERE form_name=%s"
+            cursor.execute(select_query, (form_name,))
+            new_form_id = cursor.fetchone()['form_id']
+
+            questions = self.get_questions(form_id, user_id)
+
+            for q in questions:
+                query = 'INSERT INTO questions (form_id, question_text, question_type_id, position) VALUES (%s, %s, %s, %s)'
+                cursor.execute(query, (new_form_id, q['text'], q['type_id'], q['position']))
+                self.connection.commit()
+
+                if q['type'] == 'dropdown':
+                    select_query = 'SELECT * FROM questions WHERE form_id=%s AND position=%s'
+                    cursor.execute(select_query, (new_form_id, q['position']))
+                    q_id = cursor.fetchone()['question_id']
+
+                    select_query = 'SELECT * FROM dropdown_question_options WHERE question_id=%s ORDER BY position;' 
+                    cursor.execute(select_query, (q['question_id'],))
+                    options = cursor.fetchall()
+
+                    for opt in options:
+                        insert_query = "INSERT INTO dropdown_question_options (question_id, dropdown_question_option, position) VALUES (%s, %s, %s)"
+                        cursor.execute(insert_query, (q_id, opt['dropdown_question_option'], opt['position']))
+                        self.connection.commit()
+           
+            insert_query = "INSERT INTO forms_access (form_id, user_id, user_role_id) VALUES (%s, %s, 1)"
+            cursor.execute(insert_query, (new_form_id, user_id))
+            self.connection.commit()
+
+            cursor.close()
+            return new_form_id
+
+        except (psycopg2.Error) as error:
+            print(error)
+            return False
+        
+    def add_option(self, question_id, option_text):
+        try:
+            cursor = self.connection.cursor(cursor_factory=RealDictCursor)
+            print(question_id, 'qid')
+            q = "SELECT * FROM dropdown_question_options WHERE question_id=%s ORDER BY position DESC LIMIT 1"
+            cursor.execute(q, (question_id,))
+            pos = int(cursor.fetchone()['position'])+1
+
+            q = 'INSERT INTO dropdown_question_options (question_id, dropdown_question_option, position) VALUES (%s, %s, %s)'
+            cursor.execute(q, (question_id, option_text, pos))
+            self.connection.commit()
+            cursor.close()
+
+        except (psycopg2.Error) as error:
+            print(error)
+            return False
+
 
 
 if __name__ == '__main__':

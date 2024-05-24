@@ -1,0 +1,51 @@
+{% extends 'home_base.html' %}
+
+{% block title %} Edit {% endblock %}
+
+{% block head %}
+<link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/dashboard_styles.css') }}">
+<link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/form_styles.css') }}">
+<link rel="icon" href="{{ url_for('static',filename='img/dash.png') }}" type="image/icon type">
+{% endblock %}
+{% block body %}
+
+<div class="access-form-holder">
+    <div class="form-name">
+        {{form_name}}
+    </div>
+
+    <div class="entry-details">
+
+        <form action="/{{form_id}}/edit" method="post">
+            
+
+                <div class="entry-qr">
+                    <div class="entry-question">
+                        Select Question
+                    </div>
+                    
+                    <select name="question" id="" class="form-select form-control-add">
+                        {% for i in range(questions|length) %}
+                            {% if questions[i]['type'] == 'dropdown' %}
+                                <option value="{{questions[i]['question_id']}}">{{questions[i]['text']}}</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                    <div class="entry-question">
+                        Add Option
+                    </div>
+                    <div class="entry-answer">
+                        <input type="text" class="form-control form-control-add" name="option" id="">
+                    </div>
+                    
+                </div>
+
+            
+            <button type="submit" class="btn btn-primary"> Add Options </button>
+        </form>
+    </div>
+    
+</div>
+
+
+{% endblock %}

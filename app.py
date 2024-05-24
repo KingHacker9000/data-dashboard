@@ -39,7 +39,7 @@ app.secret_key = os.environ['client_secret']
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1" # to allow Http traffic for local dev
 
 client_secrets_file = os.path.join(pathlib.Path(__file__).parent, "client_secret.json")
-URL =  'http://15.206.68.83:5000' or 'http://127.0.0.1:5000'
+URL =  'http://127.0.0.1:5000'
 
 flow = Flow.from_client_secrets_file(
     client_secrets_file=client_secrets_file,
@@ -54,18 +54,23 @@ DATABASE = Database()
 @app.route("/")
 def index():
     session['last_visited'] = '/'
-    return render_template("index.html")
+    if 'user_id' in session:
+        return render_template("index.html", logged_in='user_id' in session, photo_uri=session['photo_uri'] if 'photo_uri' in session else None, form_id='1')
+    else:
+        return render_template("index.html", form_id=1)
 
 
 @app.route("/login")
 def login():
     authorization_url, state = flow.authorization_url()
     session["state"] = state
+    print('login Attempt')
     return redirect(authorization_url)
 
 
 @app.route("/callback")
 def callback():
+    print('calling back')
     flow.fetch_token(authorization_response=request.url)
 
     if not session["state"] == request.args["state"]:
@@ -92,6 +97,8 @@ def callback():
         user = DATABASE.get_user_id(id_info.get("sub"))
     session["user_id"] = user
     session['photo_uri'] = id_info.get('picture')
+
+    print('got user')
 
     return redirect(session['last_visited'] if 'last_visited' in session else '/')
 
@@ -166,7 +173,8 @@ def export(form_id):
 @check_access
 def exportfile(form_id):
 
-    qns, res = DATABASE.get_all_responses(form_id, session['user_id'])
+    period = request.args.get('period')
+    qns, res = DATABASE.get_all_responses(form_id, session['user_id'], period)
 
     form_name = DATABASE.get_form_name(form_id)
 
@@ -222,6 +230,40 @@ def access(form_id):
 
     DATABASE.update_access(email, role, form_id)
     return redirect(f'/{form_id}/dashboard')
+
+
+@app.route("/<form_id>/settings")
+@login_required
+@check_access
+def settings(form_id):
+    form_name = DATABASE.get_form_name(form_id)
+    return render_template('settings.html', form_id=form_id, photo_uri=session['photo_uri'], form_name=form_name)
+
+
+@app.route("/<form_id>/duplicate")
+@login_required
+@check_access
+def duplicate(form_id):
+    form_name = request.args.get('form_name')
+    print(form_name, "form name")
+    new_form_id = DATABASE.duplicate(form_id, form_name, session['user_id'])
+    return redirect(f"/{new_form_id}/dashboard")
+
+@app.route("/<form_id>/edit", methods=["GET", "POST"])
+@login_required
+@check_access
+def edit(form_id):
+    if request.method == "GET":
+        questions = DATABASE.get_questions(form_id, session['user_id'])
+        form_name = DATABASE.get_form_name(form_id)
+        return render_template('edit.html', form_id=form_id, photo_uri=session['photo_uri'], form_name=form_name, questions=questions)
+
+    question = request.form.get('question')
+    option = request.form.get('option')
+    DATABASE.add_option(question, option)
+
+    return redirect(f"/{form_id}/dashboard")
+
 
 @app.route("/logout")
 def logout():

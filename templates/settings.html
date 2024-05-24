@@ -1,0 +1,34 @@
+{% extends 'home_base.html' %}
+
+{% block title %} Settings {% endblock %}
+
+{% block head %}
+<link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/dashboard_styles.css') }}">
+<link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/form_styles.css') }}">
+<link rel="icon" href="{{ url_for('static',filename='img/dash.png') }}" type="image/icon type">
+{% endblock %}
+{% block body %}
+
+<div class="access-form-holder">
+    <div class="form-name">
+        {{form_name}}
+    </div>
+
+    <div class="entry-details">
+
+        <form action="/{{form_id}}/duplicate" method="get">
+            <div class="entry-qr">
+                <div class="entry-question">
+                    Name of New Form
+                </div>
+                <div class="entry-answer">
+                    <input type="text" name="form_name">
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary delete-btn"> Duplicate Form </button>
+        </form>
+    </div>
+    
+</div>
+
+{% endblock %}

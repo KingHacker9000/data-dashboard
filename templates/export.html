@@ -8,10 +8,26 @@
 {% endblock %}
 {% block body %}
 
-Export as Excel
+<div class="largeText">
+    Export File
+</div>
+<div class="data-container-holder">
+    <form action="./exportfile" method="get" target="_blank">
+        <div class="export-center">
+            <div class="time-period">
+                Data Time Period
+            </div>
+            <select name="period" id="" class="form-select form-control-add" >
+                    <option value="pd"> Past Day </option>
+                    <option value="pw"> Past Week </option>
+                    <option value="py"> Past Year </option>
+                    <option value="at"> All Time </option>
+            </select>
+            <button type="submit" class="form-check btn btn-primary btn-blue">Get File</button>
+        </div>
+    </form>
+</div>
 
-<form action="./exportfile" method="get" target="_blank">
-    <button type="submit">Get File</button>
-</form>
+
 
 {% endblock %}
