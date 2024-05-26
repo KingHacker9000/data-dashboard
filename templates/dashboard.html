@@ -13,28 +13,6 @@
     Dashboard
 </div>
 
-<script>
-    link = document.getElementById('link')
-    box = document.getElementsByClassName('share-tray')[0]
-    var copyBtn = document.getElementById('copy_btn')
-
-    function copy_text(){
-        box.classList.add('share-tray-display')
-        window.setTimeout(()=>{
-            box.classList.add('share-tray-active')
-        }, 10)
-        link.focus();
-        link.select();
-        var successful = document.execCommand('copy');
-        var msg = successful ? 'successful' : 'unsuccessful';
-        console.log(msg)
-    }
-
-    copyBtn.addEventListener('click', function(event) {
-        copy_text();
-    });
-
-</script>
 
 <div class="data-container-holder">
     <!-- <div class="data-container">

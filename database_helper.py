@@ -708,6 +708,28 @@ class Database:
             print(error)
             return False
 
+    def get_forms(self, user_id):
+
+        try:
+            cursor = self.connection.cursor(cursor_factory=RealDictCursor)
+            q = "SELECT * FROM forms_access WHERE user_id=%s AND user_role_id IN (1, 2)"
+            cursor.execute(q, (user_id,))
+            formrows = cursor.fetchall()
+
+            if formrows is None:
+                return []
+            
+            form_ids = [int(row['form_id']) for row in formrows]
+
+            q = 'SELECT * FROM forms WHERE form_id IN %s'
+            cursor.execute(q, (tuple(form_ids),))
+            forms = cursor.fetchall()
+            cursor.close()
+            return forms
+
+        except (psycopg2.Error) as error:
+            print(error)
+            return []
 
 
 if __name__ == '__main__':

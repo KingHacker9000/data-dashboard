@@ -53,7 +53,26 @@
         </div>
     </header>
     <main>
-        {% block body %}{% endblock %}
+        <div class="form-container-holder">
+            <div class="form-container">
+                <div class="form-name">SELECT FORM</div>
+                <div class="form-question-container">
+                    <form action="/getform" method="get">
+                        <div class="question-container">
+                            <select name="form_id" id="" class="form-select form-control-add" >
+                                {% for form in forms %}
+                                    <option value="{{form['form_id']}}">{{form['form_name']}}</option>
+                                {% endfor %}
+                            </select>
+                            <br>
+                        </div>
+                        <div class="submit-btn">
+                            <button type="submit" class="btn btn-primary submit-btn btn-blue form-control-add">Submit</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
     </main>
     <footer>
         <div class="dev-details">

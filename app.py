@@ -52,12 +52,14 @@ DATABASE = Database()
 
 # Home Directory
 @app.route("/")
+@login_required
 def index():
     session['last_visited'] = '/'
+    forms = DATABASE.get_forms(session['user_id'])
     if 'user_id' in session:
-        return render_template("index.html", logged_in='user_id' in session, photo_uri=session['photo_uri'] if 'photo_uri' in session else None, form_id='1')
+        return render_template("index.html", logged_in='user_id' in session, photo_uri=session['photo_uri'] if 'photo_uri' in session else None, form_id='2', forms=forms)
     else:
-        return render_template("index.html", form_id=1)
+        return render_template("index.html", form_id=2, forms=forms)
 
 
 @app.route("/login")
@@ -166,7 +168,7 @@ def get_image(form_id, answer_id):
 @check_access
 def export(form_id):
     session['last_visited'] = f'/{form_id}/export'
-    return render_template("export.html", form_id=form_id, photo_uri=session['photo_uri'])
+    return render_template("export.html", form_id=form_id, photo_uri=session['photo_uri'], site_url=URL)
 
 @app.route("/<form_id>/exportfile")
 @login_required
@@ -223,13 +225,13 @@ def access(form_id):
     if request.method == "GET":
         form_name = DATABASE.get_form_name(form_id)
         return render_template("access.html", form_id=form_id, photo_uri=session['photo_uri'],
-                           form_name=form_name)
+                           form_name=form_name, site_url=URL)
     
     email = request.form['email']
     role = request.form['user_role']
 
     DATABASE.update_access(email, role, form_id)
-    return redirect(f'/{form_id}/dashboard')
+    return redirect(f'/{form_id}/dashboard', site_url=URL)
 
 
 @app.route("/<form_id>/settings")
@@ -237,7 +239,7 @@ def access(form_id):
 @check_access
 def settings(form_id):
     form_name = DATABASE.get_form_name(form_id)
-    return render_template('settings.html', form_id=form_id, photo_uri=session['photo_uri'], form_name=form_name)
+    return render_template('settings.html', form_id=form_id, photo_uri=session['photo_uri'], form_name=form_name, site_url=URL)
 
 
 @app.route("/<form_id>/duplicate")
@@ -256,7 +258,7 @@ def edit(form_id):
     if request.method == "GET":
         questions = DATABASE.get_questions(form_id, session['user_id'])
         form_name = DATABASE.get_form_name(form_id)
-        return render_template('edit.html', form_id=form_id, photo_uri=session['photo_uri'], form_name=form_name, questions=questions)
+        return render_template('edit.html', form_id=form_id, photo_uri=session['photo_uri'], form_name=form_name, questions=questions, site_url=URL)
 
     question = request.form.get('question')
     option = request.form.get('option')
@@ -291,6 +293,12 @@ def answer_form(form_id):
 
     return render_template('form_submitted.html', photo_uri=session['photo_uri'])
 
+
+@app.route("/getform")
+@login_required
+def get_form():
+    form_id = request.args.get("form_id")
+    return redirect(f"/{form_id}/dashboard")
 
 # Run The Application
 if __name__ == "__main__":
