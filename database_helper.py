@@ -8,6 +8,11 @@ class Database:
 
     def __init__(self, dbname='test', user='postgres', password=os.environ['DB_password'], host='localhost', port='5432') -> None:
         try:
+            self.dbname = dbname
+            self.user=user
+            self.password = password
+            self.host = host
+            self.port = port
             self.connection = psycopg2.connect(
                 dbname=dbname,
                 user=user,
@@ -19,6 +24,18 @@ class Database:
         except (Exception, psycopg2.Error) as error:
             print(error)
 
+    def reconnect(self):
+        try:
+            self.connection = psycopg2.connect(
+                dbname=self.dbname,
+                user=self.user,
+                password=self.password,
+                host=self.host,
+                port=self.port
+            )
+
+        except (Exception, psycopg2.Error) as error:
+            print(error)
 
     def get_user_id(self, google_id: str) -> int:
         try:
@@ -35,6 +52,8 @@ class Database:
 
         except (Exception, psycopg2.Error) as error:
             print(error)
+            self.connection.close()
+            self.reconnect()
             return None
         
     def sign_up_user(self, google_id, picture_uri, email, name) -> bool:
@@ -56,6 +75,8 @@ class Database:
 
         except (Exception, psycopg2.Error) as error:
             print(error)
+            self.connection.close()
+            self.reconnect()
             return False
 
     def close(self) -> None:
@@ -72,6 +93,8 @@ class Database:
 
         except (Exception, psycopg2.Error) as error:
             print(error)
+            self.connection.close()
+            self.reconnect()
             return 'Forms'
         
 
@@ -102,6 +125,8 @@ class Database:
             return True
         except (Exception, psycopg2.Error) as error:
             print(error)
+            self.connection.close()
+            self.reconnect()
             return False
         
 
@@ -142,6 +167,8 @@ class Database:
 
         except (Exception, psycopg2.Error) as error:
             print(error)
+            self.connection.close()
+            self.reconnect()
             return False
         
 
@@ -272,6 +299,8 @@ class Database:
 
         except (Exception, psycopg2.Error) as error:
             print(error)
+            self.connection.close()
+            self.reconnect()
             return False
 
 
@@ -407,6 +436,8 @@ class Database:
 
         except (psycopg2.Error) as error:
             print(error)
+            self.connection.close()
+            self.reconnect()
             raise AppError('PSQL Error')
 
 
@@ -533,6 +564,8 @@ class Database:
 
         except (psycopg2.Error) as error:
             print(error)
+            self.connection.close()
+            self.reconnect()
             return False
         
     def get_image(self, user_id, form_id, answer_id):
@@ -557,6 +590,8 @@ class Database:
 
         except (psycopg2.Error) as error:
             print(error)
+            self.connection.close()
+            self.reconnect()
             return False
         
     def update_access(self, email, role, form_id):
@@ -595,6 +630,8 @@ class Database:
 
         except (psycopg2.Error) as error:
             print(error)
+            self.connection.close()
+            self.reconnect()
             return False
         
 
@@ -645,6 +682,8 @@ class Database:
 
         except (psycopg2.Error) as error:
             print(error)
+            self.connection.close()
+            self.reconnect()
             return False
         
 
@@ -689,6 +728,8 @@ class Database:
 
         except (psycopg2.Error) as error:
             print(error)
+            self.connection.close()
+            self.reconnect()
             return False
         
     def add_option(self, question_id, option_text):
@@ -706,6 +747,8 @@ class Database:
 
         except (psycopg2.Error) as error:
             print(error)
+            self.connection.close()
+            self.reconnect()
             return False
 
     def get_forms(self, user_id):
@@ -729,6 +772,8 @@ class Database:
 
         except (psycopg2.Error) as error:
             print(error)
+            self.connection.close()
+            self.reconnect()
             return []
 
 
