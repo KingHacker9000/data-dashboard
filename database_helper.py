@@ -463,7 +463,7 @@ class Database:
                 raise AppError('Submission Does Not Exist')
 
             select_query = "SELECT * FROM users where user_id=%s"
-            cursor.execute(select_query, (user_id,))
+            cursor.execute(select_query, (sub['user_id'],))
             user = cursor.fetchone()
             submission_details = {
                 'user': user['name'],
